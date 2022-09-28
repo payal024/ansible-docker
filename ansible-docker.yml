@@ -1,0 +1,43 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+  - name: "Install python package"
+    package:
+      name: "python2"
+      state: present
+  - name: "Installing docker as it has dependencies"
+    command: "pip install docker-py"
+  - name: Install docker
+    package:
+      name: docker
+      state: present
+  - name: Start Docker Service
+    service:
+      name:  docker
+      state: started
+      enabled: yes
+  - name: Pulling Docker Image
+    docker_image:
+       name: "httpd"
+       tag: latest
+       source: pull
+  - name: "Creating folder and copying html file"
+    file:
+      path: "/myfile"
+      state: directory
+  - name: "Copying local files"
+    copy:
+      src: "index.html"
+      dest: "/myfile/"
+  - name: Creating container using HTTPD Image
+    docker_container:
+      name: "MyWebServer3"
+      image: "httpd"
+      state: started
+      exposed_ports:
+      - "80"
+      ports:
+      - "8888:80"
+      volumes:
+      - /myfile:/usr/local/apache2/htdocs/
